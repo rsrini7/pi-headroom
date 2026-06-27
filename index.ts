@@ -169,10 +169,13 @@ export default async function headroomExtension(pi: ExtensionAPI) {
 
           // The proxy returns a tool_result format
           if (data.tool_result) {
+            const rawContent = data.tool_result.content;
+            // Ensure content is always an array of content blocks
+            const content = Array.isArray(rawContent)
+              ? rawContent
+              : [{ type: "text", text: typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent) }];
             return {
-              content: data.tool_result.content || [
-                { type: "text", text: JSON.stringify(data) },
-              ],
+              content,
             };
           }
 

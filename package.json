@@ -29,10 +29,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/A5C-2F2B-Organization/pi-headroom.git"
+    "url": "git+https://github.com/rsrini7/pi-headroom.git"
   },
   "bugs": {
-    "url": "https://github.com/A5C-2F2B-Organization/pi-headroom/issues"
+    "url": "https://github.com/rsrini7/pi-headroom/issues"
   },
-  "homepage": "https://github.com/A5C-2F2B-Organization/pi-headroom#readme"
+  "homepage": "https://github.com/rsrini7/pi-headroom#readme"
 }

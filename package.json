@@ -1,0 +1,38 @@
+{
+  "name": "pi-headroom",
+  "version": "0.1.0",
+  "description": "Headroom proxy extension for pi-coding-agent - routes requests through local Headroom compression proxy for 30-60% token savings, with CCR retrieval support",
+  "type": "module",
+  "main": "index.ts",
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "check": "bunx tsc --noEmit"
+  },
+  "files": [
+    "*.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-package",
+    "extension",
+    "headroom",
+    "token-compression",
+    "cost-optimization"
+  ],
+  "author": "Srinivasan Ragothaman",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/A5C-2F2B-Organization/pi-headroom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/A5C-2F2B-Organization/pi-headroom/issues"
+  },
+  "homepage": "https://github.com/A5C-2F2B-Organization/pi-headroom#readme"
+}

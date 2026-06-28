@@ -1,6 +1,6 @@
 {
   "name": "@rsrini/pi-headroom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headroom proxy extension for pi-coding-agent - routes requests through local Headroom compression proxy for 30-60% token savings, with CCR retrieval support",
   "type": "module",
   "main": "index.ts",

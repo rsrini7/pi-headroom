@@ -11,34 +11,68 @@ Headroom proxy extension for [pi-coding-agent](https://github.com/earendil-works
 
 ## Installation
 
+### Prerequisites
+
+1. Install [pi-coding-agent](https://github.com/earendil-works/pi-coding-agent)
+2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) (for running headroom)
+
+### Install pi-headroom
+
 ```bash
-# From npm (when published)
-pi install pi-headroom
+# Option 1: Install via pi (recommended)
+pi install npm:@rsrini/pi-headroom
 
-# From local path
-pi install ~/ws/pi-headroom
-
-# Or just use directly
-pi -e ~/ws/pi-headroom
+# Option 2: Add to ~/.pi/agent/settings.json
+{
+  "packages": ["npm:@rsrini/pi-headroom"]
+}
 ```
 
 ## Quick Start
 
+### Option A: Use the `hpi` wrapper script (recommended)
+
+The easiest way to use both plugins together:
+
+```bash
+# Download the hpi script
+curl -O https://raw.githubusercontent.com/rsrini7/pi-headroom/main/hpi.sh
+chmod +x hpi.sh
+
+# Add to your shell
+echo 'source /path/to/hpi.sh' >> ~/.zshrc
+source ~/.zshrc
+
+# Start pi with both extensions
+hpi
+```
+
+### Option B: Manual setup
+
 ```bash
 # 1. Start Headroom proxy
-hpi
+uvx --python 3.12 --from 'headroom-ai[proxy,ml,code]==0.27.0' \
+  headroom proxy --port 8787 --memory --code-aware
 
-# 2. Use pi with headroom extension
-pi -e ~/ws/pi-headroom
+# 2. In another terminal, start pi with the extension
+pi -e npm:@rsrini/pi-headroom
+```
 
-# Or combine with pi-rtk for maximum savings
-pi -e ~/ws/pi-headroom -e pi-rtk
+### Option C: Configure in settings.json
+
+```bash
+# Install both plugins
+pi install npm:@rsrini/pi-rtk
+pi install npm:@rsrini/pi-headroom
+
+# They're now active for all pi sessions
+pi
 ```
 
 ## Token Reduction Stack
 
 ```
-Tool output  →  pi-rtk (60-90%)  →  pi context  →  Headroom (30-60%)  →  LLM
+Tool output  →  pi-rtk (60-90%)  →  Pi context  →  Headroom (30-60%)  →  LLM
                   ↑ client-side                        ↑ proxy-side
 ```
 
@@ -48,80 +82,110 @@ Tool output  →  pi-rtk (60-90%)  →  pi context  →  Headroom (30-60%)  → 
 | **pi-headroom** | Routes through compression proxy | Pi client | 30-60% |
 | **Headroom** | Compresses full context window | Proxy :8787 | 30-60% |
 
+**Combined savings: 70-95%** depending on content type.
+
 ## Configuration
 
 Create `~/.pi/agent/headroom-config.json`:
 
 ```json
 {
-  "port": 8787,
-  "host": "localhost",
-  "registerRetrieveTool": true
+  "enabled": true,
+  "proxy": {
+    "host": "localhost",
+    "port": 8787
+  },
+  "features": {
+    "compression": true,
+    "caching": true,
+    "retrieval": true
+  }
 }
 ```
 
-Or project-local `.pi/headroom-config.json`.
+## Commands
 
-## How It Works
+| Command | Description |
+|---------|-------------|
+| `/headroom-stats` | Show compression statistics |
+| `/headroom-on` | Enable proxy routing |
+| `/headroom-off` | Disable proxy routing |
+| `/headroom-status` | Check proxy connection status |
 
-1. **Session start**: Extension checks if Headroom proxy is running
-2. **Provider override**: If running, overrides `opencode-go` baseUrl to `http://localhost:8787/v1`
-3. **Tool registration**: Registers `headroom_retrieve` tool for CCR support
-4. **CCR flow**: When LLM calls `headroom_retrieve`, tool proxies call to Headroom's `/v1/retrieve/tool_call` endpoint
+## Agent Tool
 
-## CCR (Cache-Compress-Retrieve)
+The `headroom_retrieve` tool allows the AI agent to retrieve cached context when needed.
 
-Headroom's CCR makes compression reversible:
+## The `hpi` Wrapper Script
 
-1. **Compress**: Headroom compresses tool outputs in context
-2. **Cache**: Original content stored with hash
-3. **Retrieve**: LLM can call `headroom_retrieve(hash, query)` to get original
-
-This extension registers the tool so pi can handle these calls.
-
-## Shell Function (hpi)
-
-For convenience, use the `hpi` shell function:
+The `hpi` script provides a seamless experience:
 
 ```bash
-# Source it
-source ~/ws/Learnings/Scripts/hpi.sh
+# Start with both plugins (local dev mode)
+hpi
 
-# Use it
-hpi                          # interactive
-hpi -p "fix the bug"         # one-shot
-hpi --model claude-sonnet-4  # custom model
-hpi --stop                   # kill proxy
+# Use npm published packages
+hpi --npm
+
+# Use specific model
+hpi --npm --model openrouter/claude-sonnet-4
+
+# One-shot mode
+hpi --npm -p "fix the bug"
+
+# Stop the proxy
+hpi --stop
 ```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--npm` | Use npm published packages |
+| `--local` | Use local workspace paths (default) |
+| `--no-rtk` | Skip rtk extension (headroom only) |
+| `--stop` | Kill the headroom proxy |
+| `--model` | Override model |
+| `--thinking` | Override thinking level |
+
+## Combining with pi-rtk
+
+For maximum savings, install both:
+
+```bash
+pi install npm:@rsrini/pi-rtk
+pi install npm:@rsrini/pi-headroom
+```
+
+Or use the `hpi` wrapper which handles both automatically.
 
 ## Troubleshooting
 
+### Proxy not starting
+
 ```bash
-# Check proxy health
-curl -s http://localhost:8787/health | jq .
+# Check if port is in use
+lsof -i :8787
 
-# View proxy stats
-curl -s http://localhost:8787/stats | jq .summary
+# Kill existing processes
+hpi --stop
 
-# View proxy logs
+# Check logs
 cat ~/.pi/agent/headroom.log
-
-# Force restart proxy
-hpi --stop && hpi
 ```
 
-## Files
+### Extension not loading
 
-| File | Purpose |
-|------|---------|
-| `index.ts` | Extension entry point |
-| `package.json` | Package metadata |
-| `tsconfig.json` | TypeScript config |
+```bash
+# Verify installation
+pi list
 
-## Related
+# Check settings
+cat ~/.pi/agent/settings.json
 
-- [pi-rtk](https://github.com/mcowger/pi-rtk) — Client-side tool output filtering
-- [Headroom](https://github.com/headroom-ai/headroom) — Context compression proxy
+# Test with verbose output
+pi -e npm:@rsrini/pi-headroom --verbose
+```
 
 ## License
 
